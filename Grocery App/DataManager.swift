@@ -121,6 +121,24 @@ extension DataManager {
 
     }
     
+    func deleteGrocery() throws {
+        guard let ctx = managedObjectContext else {
+            throw DataError.BadManagedObjectContext("The managed object context was nil")
+        }
+        
+        for item in groceries[selectedGroceryIndex].items! {
+            if let it = (item as? Item) {
+                ctx.delete(it)
+            }
+        }
+        
+        ctx.delete(groceries[selectedGroceryIndex])
+        groceries.remove(at: selectedGroceryIndex)
+        
+        try? save()
+        
+    }
+    
     func getItem(from row: Int) -> (name: String?, quantityType: String?, quantity: Int16, isComplete: Bool)? {
         guard let item = items.value(at: row) else {
             return nil

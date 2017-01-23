@@ -14,6 +14,8 @@ class ItemViewController: UIViewController, UITableViewDataSource, UITableViewDe
     
     var manager = DataManager.shared
     
+    var editingState = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -50,6 +52,44 @@ class ItemViewController: UIViewController, UITableViewDataSource, UITableViewDe
         tableView.deselectRow(at: indexPath, animated: UIView.areAnimationsEnabled)
         
         manager.selectedItemIndex = indexPath.row
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let item = manager.getItem(from: indexPath.row)
+            manager.selectedItemIndex = indexPath.row
+            
+            let alertController = UIAlertController(title: "Delete Item", message: "You are about to delete item '\(item?.name)'", preferredStyle: .actionSheet)
+            
+            let  deleteButton = UIAlertAction(title: "Delete forever", style: .destructive, handler: { (action) -> Void in
+                try? self.manager.deleteItem()
+                self.itemTable?.reloadData()
+                self.dismiss(animated: true, completion: nil)
+            })
+            
+            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+                print("Cancel button tapped")
+            })
+            
+            alertController.addAction(deleteButton)
+            alertController.addAction(cancelButton)
+            
+            self.present(alertController, animated: true, completion: nil)
+        }
+    }
+    
+    @IBAction func editHandler(_ sender: UIBarButtonItem) {
+        editingState = !editingState;
+        itemTable?.setEditing(editingState, animated: UIView.areAnimationsEnabled)
+        if(editingState) {
+            sender.title = "Done"
+        }else {
+            sender.title = "Edit"
+        }
     }
     
 }
